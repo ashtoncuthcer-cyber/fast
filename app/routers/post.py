@@ -7,15 +7,18 @@ from sqlmodel import select
 from .. import models, schemas
 from ..database import  SessionDep
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/posts',
+    tags=['Posts'],
+)
 
 
-@router.get('/posts', response_model=List[schemas.Post])
+@router.get('/', response_model=List[schemas.Post])
 def get_posts(db: SessionDep):
     posts = db.exec(select(models.Post)).all()
     return posts
 
-@router.post('/posts', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreateUpdate, db: SessionDep):
     new_post = models.Post(**post.model_dump())
     db.add(new_post)
@@ -24,7 +27,7 @@ def create_posts(post: schemas.PostCreateUpdate, db: SessionDep):
 
     return new_post
 
-@router.get('/posts/{id}', response_model=schemas.Post)
+@router.get('/{id}', response_model=schemas.Post)
 def get_post(id: int, db: SessionDep):
     post = db.exec(select(models.Post).where(models.Post.id == id)).first()
     if not post:
@@ -34,7 +37,7 @@ def get_post(id: int, db: SessionDep):
         )
     return post
 
-@router.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: SessionDep):
     post = db.exec(select(models.Post).where(models.Post.id == id)).first()
     if not post:
@@ -46,7 +49,7 @@ def delete_post(id: int, db: SessionDep):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put('/posts/{id}', response_model=schemas.Post)
+@router.put('/{id}', response_model=schemas.Post)
 def update_post(id: int, post: schemas.PostCreateUpdate, db: SessionDep):
     db_post = db.exec(select(models.Post).where(models.Post.id == id)).first()
 
