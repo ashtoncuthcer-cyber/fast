@@ -12,6 +12,21 @@ class Post(SQLModel, table=True):
         sa_column_kwargs={'server_default': text('TRUE')}
     )
     created_at: datetime = Field(
+        default=None,
+        sa_column=Column(
+            TIMESTAMP(timezone=True),
+            nullable=False,
+            server_default=text('now()'),
+        )
+    )
+
+class User(SQLModel, table=True):
+    __tablename__ = 'users'
+    id: int | None = Field(default=None, primary_key=True)
+    email: str = Field(nullable=False, unique=True)
+    password: str = Field(nullable=False)
+    created_at: datetime = Field(
+        default=None,
         sa_column=Column(
             TIMESTAMP(timezone=True),
             nullable=False,
