@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 
 DATABASE_URL = 'postgresql+psycopg://postgres:password@127.0.0.1:5432/fastapi'
 
