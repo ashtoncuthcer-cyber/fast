@@ -1,10 +1,11 @@
 
 from typing import List
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from sqlmodel import select
 
-from .. import models, schemas
+
+from .. import models, schemas, oauth2
 from ..database import  SessionDep
 
 router = APIRouter(
@@ -19,8 +20,9 @@ def get_posts(db: SessionDep):
     return posts
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
-def create_posts(post: schemas.PostCreateUpdate, db: SessionDep):
+def create_posts(post: schemas.PostCreateUpdate, db: SessionDep, user: models.User = Depends(oauth2.get_current_user)):
     new_post = models.Post(**post.model_dump())
+    print(user.email)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
