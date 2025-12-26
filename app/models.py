@@ -1,6 +1,7 @@
-from datetime import datetime 
-from sqlmodel import SQLModel, Field
-from sqlalchemy import Column, text, TIMESTAMP
+from datetime import datetime
+from typing import List 
+from sqlmodel import Relationship, SQLModel, Field
+from sqlalchemy import Column, ForeignKey, text, TIMESTAMP
 
 class Post(SQLModel, table=True):
     __tablename__ = "posts"
@@ -19,6 +20,13 @@ class Post(SQLModel, table=True):
             server_default=text('now()'),
         )
     )
+    owner_id: int = Field(
+        sa_column=Column(
+            ForeignKey('users.id', ondelete='CASCADE'),
+            nullable=False,
+        )
+    )
+    owner: 'User' = Relationship(back_populates='posts')
 
 class User(SQLModel, table=True):
     __tablename__ = 'users'
@@ -33,3 +41,4 @@ class User(SQLModel, table=True):
             server_default=text('now()'),
         )
     )
+    posts: List['Post'] = Relationship(back_populates='owner') 

@@ -1,8 +1,9 @@
+from typing import List
 from fastapi import APIRouter, HTTPException, status
 
 from sqlmodel import select
 
-from .. import models, schemas, utils
+from .. import models, schemas, utils, oauth2
 from ..database import  SessionDep
 
 router = APIRouter(
@@ -29,3 +30,8 @@ def get_user(id: int, db: SessionDep):
             detail=f'user with id: {id} not found',
         )
     return user
+
+@router.get('/', response_model=List[schemas.UserOut])
+def get_users(db: SessionDep):
+    users = db.exec(select(models.User)).all()
+    return users
