@@ -42,3 +42,18 @@ class User(SQLModel, table=True):
         )
     )
     posts: List['Post'] = Relationship(back_populates='owner') 
+
+class Vote(SQLModel, table=True):
+    __tablename__ = 'votes'
+    user_id: int = Field(
+        sa_column=Column(
+            ForeignKey('users.id', ondelete='CASCADE'),
+            primary_key=True,
+        )
+    )
+    post_id: int = Field(
+        sa_column=Column(
+            ForeignKey('posts.id', ondelete='CASCADE'),
+            primary_key=True,
+        )
+    )

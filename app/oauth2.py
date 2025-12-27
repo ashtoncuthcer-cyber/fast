@@ -10,10 +10,11 @@ from sqlmodel import select
 
 from .database import SessionDep
 from . import schemas, models
+from .config import settings
 
-SECRET_KEY = "14756bcfaa418006ed1ef1cad092bef5e6b84d5ec8aefbce7fdd26d0986e8046"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 4
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_HOURS = settings.access_token_expire_hours
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 

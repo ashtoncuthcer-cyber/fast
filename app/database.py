@@ -2,8 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
+from .config import settings
 
-DATABASE_URL = 'postgresql+psycopg://postgres:password@127.0.0.1:5432/fastapi'
+DATABASE_URL = f'postgresql+psycopg://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
 
 engine = create_engine(DATABASE_URL, echo=True)
 
