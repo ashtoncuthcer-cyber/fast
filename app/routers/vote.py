@@ -18,6 +18,15 @@ def vote(
     db: SessionDep,
     user: models.User = Depends(oauth2.get_current_user),
 ):
+    post = db.exec(
+        select(models.Post)
+        .where(models.Post.id == vote.post_id)
+    ).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'post {vote.post_id} not found'
+        )        
     found_vote = db.exec(
         select(models.Vote)
         .where(models.Vote.post_id == vote.post_id, models.Vote.user_id == user.id)
