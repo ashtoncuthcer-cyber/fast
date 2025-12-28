@@ -41,6 +41,7 @@ class User(SQLModel, table=True):
             server_default=text('now()'),
         )
     )
+    
     posts: List['Post'] = Relationship(back_populates='owner') 
 
 class Vote(SQLModel, table=True):

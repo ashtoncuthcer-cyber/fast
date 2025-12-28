@@ -2,7 +2,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from sqlmodel import select
+from sqlmodel import select, func
 
 
 from .. import models, schemas, oauth2
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=List[schemas.Post])
+@router.get('/', response_model=List[schemas.PostOut])
 def get_posts(
     db: SessionDep, 
     user: models.User = Depends(oauth2.get_current_user),
@@ -22,14 +22,25 @@ def get_posts(
     skip: int = 0,
     search: Optional[str] = ''
 ):
-    posts = db.exec(
-        select(models.Post)
-        .where(models.Post.owner_id == user.id)
+
+
+    results = db.exec(
+        select(
+            models.Post,
+            func.count(models.Vote.post_id).label('votes')
+        )
+        .join(
+            models.Vote,
+            models.Vote.post_id == models.Post.id,
+            isouter=True
+        )
         .where(models.Post.title.contains(search))
+        .group_by(models.Post.id)
         .limit(limit)
         .offset(skip)
     ).all()
-    return posts
+
+    return [schemas.PostOut(Post=post, votes=votes) for post, votes in results]
 
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_posts(post: schemas.PostCreateUpdate, db: SessionDep, user: models.User = Depends(oauth2.get_current_user)):
@@ -40,9 +51,23 @@ def create_posts(post: schemas.PostCreateUpdate, db: SessionDep, user: models.Us
 
     return new_post   
 
-@router.get('/{id}', response_model=schemas.Post)
+@router.get('/{id}', response_model=schemas.PostOut)
 def get_post(id: int, db: SessionDep, user: models.User = Depends(oauth2.get_current_user)):
-    post = db.exec(select(models.Post).where(models.Post.id == id)).first()
+    # post = db.exec(select(models.Post).where(models.Post.id == id)).first()
+
+    post = db.exec(
+        select(
+            models.Post,
+            func.count(models.Vote.post_id).label('votes'),
+        )
+        .join(
+            models.Vote,
+            models.Vote.post_id == models.Post.id,
+            isouter=True
+        )
+        .where(models.Post.id == id)
+        .group_by(models.Post.id)
+    ).first()
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
